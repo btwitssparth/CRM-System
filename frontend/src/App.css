@@ -1,1 +1,10 @@
 @import "tailwindcss";
+@import "tailwindcss";
+
+/* Override the default dark mode to use the .dark class instead */
+@variant dark (&:where(.dark, .dark *));
+
+/* You can add any custom CSS variables here if needed later */
+@theme {
+  /* ... */
+}

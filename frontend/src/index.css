@@ -2,11 +2,37 @@
 
 @theme {
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  
+  /* Black and White Brand Colors */
+  --color-brand-50: #f8fafc;
+  --color-brand-100: #f1f5f9;
+  --color-brand-200: #e2e8f0;
+  --color-brand-300: #cbd5e1;
+  --color-brand-400: #94a3b8;
+  --color-brand-500: #64748b;
+  --color-brand-600: #475569;
+  --color-brand-700: #334155;
+  --color-brand-800: #1e293b;
+  --color-brand-900: #0f172a;
+  --color-brand-950: #020617;
 }
 
 @layer base {
+  html {
+    @apply transition-none;
+  }
+  
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
+    @apply bg-white text-black antialiased transition-colors duration-200;
+  }
+
+  /* Force dark mode styles when .dark class is present on root */
+  html.dark body {
+    @apply bg-black text-white !important;
+  }
+
+  html.dark {
+    @apply bg-black !important;
   }
 }
 
@@ -17,4 +43,26 @@ select {
   background-repeat: no-repeat;
   background-size: 1.5em 1.5em;
   padding-right: 2.5rem;
+}
+
+.dark select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+}
+
+/* Custom scrollbar for professional look */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full transition-colors hover:bg-slate-400;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-slate-700 hover:bg-slate-600;
 }

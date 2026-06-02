@@ -1,158 +1,118 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, Send } from 'lucide-react';
 import api from '../api/axios';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { motion } from 'framer-motion';
 
-const CreateTicket = () => {
+export default function CreateTicket() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     customer_name: '',
     customer_email: '',
     subject: '',
-    description: '',
+    description: ''
   });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      setLoading(true);
-      setError(null);
       await api.post('/', formData);
       navigate('/');
-    } catch (err) {
-      console.error('Error creating ticket:', err);
-      setError(err.response?.data?.message || 'Failed to create ticket. Please check your inputs and try again.');
+    } catch (error) {
+      console.error("Error creating ticket:", error);
+      alert("Failed to create ticket. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
+  const inputClasses = "flex w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all text-slate-900 dark:text-slate-100 shadow-sm";
+
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <button
-        onClick={() => navigate('/')}
-        className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        Back to Dashboard
-      </button>
-
-      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-slate-100">
-          <h1 className="text-2xl font-bold text-slate-900">Create New Ticket</h1>
-          <p className="text-slate-500 mt-1">Fill out the form below to open a new support request.</p>
+    <motion.div 
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="max-w-2xl mx-auto space-y-6"
+    >
+      <div className="flex items-center gap-4">
+        <motion.button 
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => navigate('/')}
+          className="p-2 md:p-2.5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-white dark:bg-black rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </motion.button>
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-black dark:text-white tracking-tight">Create Ticket</h1>
+          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-0.5 md:mt-1">Fill out the information below to submit a new request.</p>
         </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {error && (
-            <div className="flex items-center p-4 bg-red-50 text-red-700 rounded-md text-sm border border-red-100">
-              <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
-              {error}
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <Card className="p-5 md:p-8 border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none">
+        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
             <div className="space-y-2">
-              <label htmlFor="customer_name" className="text-sm font-medium text-slate-700">
-                Customer Name
-              </label>
-              <input
-                id="customer_name"
-                name="customer_name"
-                type="text"
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Customer Name</label>
+              <input 
                 required
+                type="text" 
                 placeholder="John Doe"
+                className={inputClasses}
                 value={formData.customer_name}
-                onChange={handleChange}
-                className="flex h-10 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all"
+                onChange={(e) => setFormData({...formData, customer_name: e.target.value})}
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="customer_email" className="text-sm font-medium text-slate-700">
-                Customer Email
-              </label>
-              <input
-                id="customer_email"
-                name="customer_email"
-                type="email"
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Email Address</label>
+              <input 
                 required
+                type="email" 
                 placeholder="john@example.com"
+                className={inputClasses}
                 value={formData.customer_email}
-                onChange={handleChange}
-                className="flex h-10 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all"
+                onChange={(e) => setFormData({...formData, customer_email: e.target.value})}
               />
             </div>
           </div>
-
+          
           <div className="space-y-2">
-            <label htmlFor="subject" className="text-sm font-medium text-slate-700">
-              Subject
-            </label>
-            <input
-              id="subject"
-              name="subject"
-              type="text"
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Subject</label>
+            <input 
               required
+              type="text" 
               placeholder="Brief summary of the issue"
+              className={inputClasses}
               value={formData.subject}
-              onChange={handleChange}
-              className="flex h-10 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all"
+              onChange={(e) => setFormData({...formData, subject: e.target.value})}
             />
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="description" className="text-sm font-medium text-slate-700">
-              Description
-            </label>
-            <textarea
-              id="description"
-              name="description"
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Description</label>
+            <textarea 
               required
-              placeholder="Provide detailed information about the customer's problem..."
-              rows={6}
+              rows={5}
+              placeholder="Provide detailed information about the issue..."
+              className={`${inputClasses} resize-none`}
               value={formData.description}
-              onChange={handleChange}
-              className="flex min-h-[120px] w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all"
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
             />
           </div>
 
-          <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => navigate('/')}
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:opacity-50 h-10 px-4 py-2 border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:opacity-50 h-10 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 shadow-sm"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4 mr-2" />
-                  Create Ticket
-                </>
-              )}
-            </button>
+          <div className="pt-4 flex justify-end gap-3">
+            <Button type="button" variant="secondary" onClick={() => navigate('/')}>Cancel</Button>
+            <Button type="submit" disabled={loading} className="gap-2 min-w-[140px] shadow-lg shadow-black/10 dark:shadow-white/5">
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              Submit Ticket
+            </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </Card>
+    </motion.div>
   );
-};
-
-export default CreateTicket;
+}
