@@ -28,7 +28,9 @@ export const createTicket = asyncHandler(async (req, res) => {
         customer_email,
         subject,
         description,
-        status: 'Open'
+        status: 'Open',
+        createdBy: req.user._id
+
     });
 
     const responseData = { 
@@ -43,6 +45,9 @@ export const createTicket = asyncHandler(async (req, res) => {
 export const getTickets = asyncHandler(async (req, res) => {
     const { status, search } = req.query;
     let query = {};
+    if (req.user.role === 'customer') {
+        query.createdBy = req.user._id;
+    }
 
     if (status) query.status = status;
 
@@ -101,7 +106,18 @@ export const updateTicket = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Ticket not found");
     }
 
+    // 1. SECURITY CHECK (IDOR Prevention)
+    // If the user is a customer, verify they actually own this ticket
+    if (req.user.role === 'customer' && ticket.createdBy.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "Access Denied: You do not have permission to view or modify this ticket.");
+    }
+
+    // 2. STATUS UPDATE (Admin Only)
     if (status) {
+        if (req.user.role !== 'admin') {
+            throw new ApiError(403, "Access Denied: Only admins can change a ticket's status.");
+        }
+
         const validStatuses = ['Open', 'In Progress', 'Closed'];
         if (!validStatuses.includes(status)) {
             throw new ApiError(400, "Invalid status value");
@@ -110,12 +126,19 @@ export const updateTicket = asyncHandler(async (req, res) => {
         await ticket.save();
     }
 
+    // 3. INTERNAL NOTES (Admin Only)
     if (notes && notes.trim() !== "") {
+        if (req.user.role !== 'admin') {
+            throw new ApiError(403, "Access Denied: Only admins can add internal notes.");
+        }
+
         await Note.create({
             ticket_id,
             note_text: notes
         });
     }
 
-    return res.status(200).json(new ApiResponse(200, { success: true, updated_at: ticket.updatedAt }, "Ticket updated successfully"));
+    return res.status(200).json(
+        new ApiResponse(200, { success: true, updated_at: ticket.updatedAt }, "Ticket updated successfully")
+    );
 });

@@ -6,10 +6,13 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../context/AuthContext'; // 1. Import useAuth
 
 export default function TicketDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth(); // 2. Get the logged-in user
+  
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -22,7 +25,7 @@ export default function TicketDetail() {
 
   const fetchTicketData = async () => {
     try {
-      const response = await api.get(`/${id}`);
+      const response = await api.get(`/tickets/${id}`);
       setTicket(response.data.data);
       setStatusUpdate(response.data.data.status);
     } catch (error) {
@@ -36,7 +39,7 @@ export default function TicketDetail() {
   const handleUpdate = async () => {
     setUpdating(true);
     try {
-      await api.put(`/${id}`, {
+      await api.put(`/tickets/${id}`, {
         status: statusUpdate,
         notes: newNote
       });
@@ -59,6 +62,9 @@ export default function TicketDetail() {
   }
 
   const inputClasses = "flex w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-slate-900 dark:text-slate-100 shadow-sm";
+
+  // Check if current user is an admin
+  const isAdmin = user?.role === 'admin';
 
   return (
     <motion.div 
@@ -91,8 +97,9 @@ export default function TicketDetail() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-        {/* Left Column: Ticket Info */}
-        <div className="lg:col-span-2 space-y-6 md:space-y-8">
+        
+        {/* Left Column: Ticket Info (Dynamically changes width if not admin) */}
+        <div className={`${isAdmin ? 'lg:col-span-2' : 'lg:col-span-3 max-w-4xl w-full mx-auto'} space-y-6 md:space-y-8`}>
           <Card className="p-5 md:p-8 border-slate-200 dark:border-slate-800 shadow-sm">
             <div className="flex items-center gap-2 mb-6">
               <User className="w-5 h-5 text-black dark:text-white" />
@@ -127,11 +134,11 @@ export default function TicketDetail() {
             </div>
           </Card>
 
-          {/* Notes History */}
+          {/* Notes History (Visible to everyone, so customers can see updates) */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 px-2">
               <MessageSquare className="w-5 h-5 text-black dark:text-white" />
-              <h3 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white">Internal Notes</h3>
+              <h3 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white">Ticket Updates</h3>
             </div>
             
             <div className="space-y-4">
@@ -145,8 +152,8 @@ export default function TicketDetail() {
                       className="flex gap-3 md:gap-4 p-4 md:p-6 bg-white dark:bg-black rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm"
                     >
                       <div className="shrink-0">
-                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center border border-slate-200 dark:border-zinc-700">
-                          <span className="text-black dark:text-white text-xs md:text-sm font-bold">SA</span>
+                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center border border-blue-200 dark:border-blue-800">
+                          <span className="text-blue-700 dark:text-blue-400 text-xs md:text-sm font-bold">SA</span>
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
@@ -164,7 +171,7 @@ export default function TicketDetail() {
                 ) : (
                   <Card className="p-12 text-center border-dashed border-2">
                     <MessageSquare className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
-                    <p className="text-slate-500 font-medium italic">No internal notes added yet.</p>
+                    <p className="text-slate-500 font-medium italic">No updates have been posted yet.</p>
                   </Card>
                 )}
               </AnimatePresence>
@@ -172,50 +179,52 @@ export default function TicketDetail() {
           </div>
         </div>
 
-        {/* Right Column: Actions */}
-        <div className="space-y-6">
-          <Card className="p-5 md:p-8 border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none lg:sticky lg:top-24">
-            <div className="flex items-center gap-2 mb-6">
-              <Settings className="w-5 h-5 text-black dark:text-white" />
-              <h3 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white">Actions</h3>
-            </div>
-            
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Update Status</label>
-                <select 
-                  className={`${inputClasses} h-11 cursor-pointer`}
-                  value={statusUpdate}
-                  onChange={(e) => setStatusUpdate(e.target.value)}
+        {/* Right Column: Actions (STRICTLY HIDDEN IF NOT ADMIN) */}
+        {isAdmin && (
+          <div className="space-y-6">
+            <Card className="p-5 md:p-8 border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none lg:sticky lg:top-24">
+              <div className="flex items-center gap-2 mb-6">
+                <Settings className="w-5 h-5 text-black dark:text-white" />
+                <h3 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white">Actions</h3>
+              </div>
+              
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Update Status</label>
+                  <select 
+                    className={`${inputClasses} h-11 cursor-pointer`}
+                    value={statusUpdate}
+                    onChange={(e) => setStatusUpdate(e.target.value)}
+                  >
+                    <option value="Open">Open</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Closed">Closed</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Add Note</label>
+                  <textarea 
+                    rows={4}
+                    placeholder="Type an internal note..."
+                    className={`${inputClasses} resize-none`}
+                    value={newNote}
+                    onChange={(e) => setNewNote(e.target.value)}
+                  />
+                </div>
+
+                <Button 
+                  onClick={handleUpdate} 
+                  disabled={updating || (statusUpdate === ticket.status && !newNote.trim())}
+                  className="w-full h-12 text-base shadow-lg shadow-black/10 dark:shadow-white/5"
                 >
-                  <option value="Open">Open</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Closed">Closed</option>
-                </select>
+                  {updating ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
+                  Update Ticket
+                </Button>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Add Note</label>
-                <textarea 
-                  rows={4}
-                  placeholder="Type an internal note..."
-                  className={`${inputClasses} resize-none`}
-                  value={newNote}
-                  onChange={(e) => setNewNote(e.target.value)}
-                />
-              </div>
-
-              <Button 
-                onClick={handleUpdate} 
-                disabled={updating || (statusUpdate === ticket.status && !newNote.trim())}
-                className="w-full h-12 text-base shadow-lg shadow-black/10 dark:shadow-white/5"
-              >
-                {updating ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
-                Update Ticket
-              </Button>
-            </div>
-          </Card>
-        </div>
+            </Card>
+          </div>
+        )}
       </div>
     </motion.div>
   );

@@ -1,8 +1,9 @@
 import axios from 'axios';
 
-// Create a centralized axios instance
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api/tickets', // Pointing to your backend port!
+  // Now it dynamically pulls the URL from your .env file!
+  baseURL: import.meta.env.VITE_API_BASE_URL, 
+  withCredentials: true, 
   headers: {
     'Content-Type': 'application/json',
   },

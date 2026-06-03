@@ -5,13 +5,15 @@ import api from '../api/axios';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext'; // 1. Import useAuth
 
 export default function CreateTicket() {
   const navigate = useNavigate();
+  const { user } = useAuth(); // 2. Get the logged-in user
   const [loading, setLoading] = useState(false);
+  
+  // 3. Removed name and email from state
   const [formData, setFormData] = useState({
-    customer_name: '',
-    customer_email: '',
     subject: '',
     description: ''
   });
@@ -20,7 +22,14 @@ export default function CreateTicket() {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post('/', formData);
+      // 4. Attach the user's details dynamically when sending!
+      const ticketPayload = {
+        ...formData,
+        customer_name: user.name,
+        customer_email: user.email
+      };
+      
+      await api.post('/tickets', ticketPayload);
       navigate('/');
     } catch (error) {
       console.error("Error creating ticket:", error);
@@ -55,30 +64,8 @@ export default function CreateTicket() {
 
       <Card className="p-5 md:p-8 border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none">
         <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Customer Name</label>
-              <input 
-                required
-                type="text" 
-                placeholder="John Doe"
-                className={inputClasses}
-                value={formData.customer_name}
-                onChange={(e) => setFormData({...formData, customer_name: e.target.value})}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Email Address</label>
-              <input 
-                required
-                type="email" 
-                placeholder="john@example.com"
-                className={inputClasses}
-                value={formData.customer_email}
-                onChange={(e) => setFormData({...formData, customer_email: e.target.value})}
-              />
-            </div>
-          </div>
+          
+          {/* Removed the Grid containing Name and Email entirely */}
           
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Subject</label>
@@ -96,7 +83,7 @@ export default function CreateTicket() {
             <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Description</label>
             <textarea 
               required
-              rows={5}
+              rows={6}
               placeholder="Provide detailed information about the issue..."
               className={`${inputClasses} resize-none`}
               value={formData.description}

@@ -1,24 +1,55 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Navbar from './components/Navbar'; // <-- Import the Navbar
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+import { Loader2 } from 'lucide-react';
+
+import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
 import CreateTicket from './pages/CreateTicket';
 import TicketDetail from './pages/TicketDetail';
+import Login from './pages/Login'; // Import the new Login page
+
+// The Bouncer Component
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>;
+  }
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return children;
+};
 
 function App() {
   return (
     <Router>
-      {/* Added dark:bg-slate-950 and dark:text-slate-50 for global dark mode! */}
-      {/* Also added transition-colors so it fades smoothly */}
-      <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-black dark:text-slate-50 font-sans antialiased transition-colors duration-300">
-        
-        {/* Render the Navbar so you can actually click the toggle button */}
+      <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 font-sans antialiased transition-colors duration-300">
         <Navbar />
         
         <main className="container mx-auto px-4 py-8 max-w-7xl">
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/create" element={<CreateTicket />} />
-            <Route path="/ticket/:id" element={<TicketDetail />} />
+            {/* Public Route */}
+            <Route path="/login" element={<Login />} />
+
+            {/* Protected Routes - Wrapped in the Bouncer */}
+            <Route path="/" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/create" element={
+              <ProtectedRoute>
+                <CreateTicket />
+              </ProtectedRoute>
+            } />
+            <Route path="/ticket/:id" element={
+              <ProtectedRoute>
+                <TicketDetail />
+              </ProtectedRoute>
+            } />
           </Routes>
         </main>
       </div>

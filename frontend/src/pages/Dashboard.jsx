@@ -21,11 +21,13 @@ export default function Dashboard() {
   const fetchTickets = async () => {
     setLoading(true);
     try {
-      let url = '/';
+      // FIX: Changed '/' to '/tickets'
+      let url = '/tickets'; 
       const params = new URLSearchParams();
       if (status) params.append('status', status);
       if (search) params.append('search', search);
       
+      // We check if params exist. If they do, we add them with a ? 
       if (params.toString()) url += `?${params.toString()}`;
       
       const response = await api.get(url);
