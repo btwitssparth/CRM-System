@@ -6,8 +6,8 @@ A full-stack customer support ticketing system built with a React frontend and N
 ---
 
 ##🌐Live Links
-**Live-Application** [https://crm-system-one-ebon.vercel.app/]
-**Backend API** [https://crm-system-w656.onrender.com]
+**Live-Application** https://crm-system-one-ebon.vercel.app/
+**Backend API** https://crm-system-w656.onrender.com
 
 ## Tech Stack
 
