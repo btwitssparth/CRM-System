@@ -189,4 +189,4 @@ Remember to update `FRONTEND_URL` (backend) and `VITE_API_BASE_URL` (frontend) t
 ---
 
 👨‍💻 Maintainer
-Parth Vinod Jain - Github Profile -
+Parth Vinod Jain - https://github.com/btwitssparth
