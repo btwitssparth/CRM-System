@@ -5,8 +5,8 @@ import User from '../models/User.model.js';
 
 const cookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: 'lax'
+    secure: true,
+    sameSite: 'none'
 };
 
 export const registerUser = asyncHandler(async (req, res) => {
