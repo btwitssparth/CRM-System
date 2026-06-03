@@ -1,5 +1,5 @@
 ﻿# Customer-Support-Ticketing-CRM-System
-# DataStraw CRM
+
 
 A full-stack customer support ticketing system built with a React frontend and Node.js/Express backend. Features role-based access control, JWT authentication via HTTP-only cookies, and a clean responsive UI.
 
