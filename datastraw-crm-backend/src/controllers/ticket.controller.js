@@ -73,12 +73,18 @@ export const getTickets = asyncHandler(async (req, res) => {
 });
 
 // @desc    Get single ticket details along with notes history
+// @desc    Get single ticket details along with notes history
 export const getTicketById = asyncHandler(async (req, res) => {
     const { ticket_id } = req.params;
 
     const ticket = await Ticket.findOne({ ticket_id });
     if (!ticket) {
         throw new ApiError(404, "Ticket not found");
+    }
+
+    // 
+    if (req.user.role === 'customer' && ticket.createdBy.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "Access Denied: You do not have permission to view this ticket.");
     }
 
     const notes = await Note.find({ ticket_id }).sort({ createdAt: 1 });
@@ -95,7 +101,6 @@ export const getTicketById = asyncHandler(async (req, res) => {
 
     return res.status(200).json(new ApiResponse(200, responseData, "Ticket details fetched successfully"));
 });
-
 // @desc    Update ticket status and/or add a new note
 export const updateTicket = asyncHandler(async (req, res) => {
     const { ticket_id } = req.params;
